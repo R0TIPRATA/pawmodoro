@@ -3,8 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useSesh } from "../context/SeshContext";
 import CreateTaskForm from "../components/CreateTaskForm";
 import UpdateTaskForm from "../components/UpdateTaskForm";
-import { isEmpty } from "lodash";
-
+import backgroundImage from "../assets/images/tasks_bg.png"
 const CREATE_PAGE = "create";
 const UPDATE_PAGE = "update";
 
@@ -103,9 +102,14 @@ const TaskList = () => {
   }, [seshStatus]);
 
   return (
-    <div>
+    <div className={`min-h-screen min-w-screen bg-[${backgroundImage}] bg-cover bg-center flex flex-col min-w-screen min-h-screen items-center justify-center`}
+    style={{backgroundImage: `url(${backgroundImage})`}}
+    >
+    {/* <div className="h-screen w-screen bg-orange-100"> */}
+    <div className="bg-stone-50/7 0 p-24 rounded-lg">
       <h3>{displayTitle()}</h3>
       {isNewSession ? <CreateTaskForm /> : <UpdateTaskForm />}
+    </div>
     </div>
   );
 };

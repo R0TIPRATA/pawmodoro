@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "proxy": "http://localhost:3000",
   "scripts": {
     "dev": "vite --port 3000",
     "build": "tsc && vite build",
@@ -16,17 +17,23 @@
     "@mui/joy": "^5.0.0-beta.10",
     "@mui/material": "^5.14.15",
     "axios": "^1.5.1",
+    "lodash": "^4.17.21",
     "luxon": "^3.4.3",
+    "nookies": "^2.5.2",
     "react": "^18.2.0",
+    "react-countdown-circle-timer": "^3.2.1",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.16.0",
-    "types": "file:../../../../../../react-router-dom"
+    "react-spotify-web-playback-sdk": "^3.0.2",
+    "types": "file:../../../../../../react-router-dom",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.200",
     "@types/luxon": "^3.3.3",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
+    "@types/uuid": "^9.0.6",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "@vitejs/plugin-react": "^4.0.3",

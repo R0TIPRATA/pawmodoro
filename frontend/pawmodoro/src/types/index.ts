@@ -4,7 +4,9 @@ export type Sesh = {
     sessionDuration?: number
     expiresIn?: Date
     status?: string
+    isPaused?: boolean
     tasks?: Task[]
+    bgm?: Bgm
 }
 
 export type Task = {
@@ -13,4 +15,10 @@ export type Task = {
     createdAt?: Date
     task: string
     completed?: boolean 
+}
+
+export type Bgm = {
+    id: string,
+    name: string,
+    uri: string
 }

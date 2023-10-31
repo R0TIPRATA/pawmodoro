@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, FormControl, FormLabel, Input, Stack } from "@mui/joy";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
+import { omit } from "lodash";
 
 const Login = () => {
-  const navigate = useNavigate()
+  const { setAuth } = useAuth();
+  const navigate = useNavigate();
+  // const location = useLocation();
+  // const from = location.state?.from?.pathname || "/";
+
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | undefined>();
@@ -68,13 +75,15 @@ const Login = () => {
         },
         withCredentials: true,
       }).then((response) => {
-        console.log(response.data.status);
+        console.log("login success! response : " ,response);
         if (response.status === 200) {
-          // setUserToken({username: response.data.cookies.username, token: response.data.cookies.token});
-          localStorage.setItem('access_token', response.data.token);
+          //setAuth({ user: response.data.user, accessToken: response.data.token});
+          localStorage.setItem('accessToken', response.data.token);
+          //localStorage.setItem('user', omit(response.data.user, 'password'));
           //localStorage.setItem('refresh_token', data.refresh);
           setTimeout(() => {
             navigate("/")
+            //navigate(from, {replace: true});
           }, 500);
         } else {
           setErrorMsg("An error occured, please try again.")

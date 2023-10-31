@@ -13,17 +13,19 @@ import { DateTime, Duration } from "luxon";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useSesh } from "../context/SeshContext";
 import { Sesh } from "../types";
+import { SPOTIFY_AUTHORIZE_URL, SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI, SPOTIFY_SCOPES } from "../common/constants";
+import UserInfo from "../components/MusicPlayer/UserInfo";
 
 const Home = () => {
   const { seshState, dispatch } = useSesh();
   const [seshStatus, setSeshStatus] = useState();
+  const [spotifyToken, setSpotifyToken] = useState()
+  const [playlists, setPlaylists] = useState([]);
   const [session, setSession] = useState({} as Sesh);
 
   const navigate = useNavigate();
 
   const createNewSession = async (formData:HTMLFormElement) => {
-    //convertToDateTime(session.sessionDuration!);
-    //console.log("session", JSON.stringify(formData,null,2))
     try {
       const response = await fetch(
         `${import.meta.env.VITE_APP_API_URL}/sesh/`,
@@ -44,7 +46,8 @@ const Home = () => {
         sessionDuration : data.session_duration,
         status: data.status,
         expiresIn: {} as Date,
-        tasks: []
+        tasks: [],
+        bgm: formData.bgm
       }
       setSession(res);
       //to add:DISPATCH UPDATE NEW SESSION
@@ -60,11 +63,35 @@ const Home = () => {
     const formData = new FormData(event.currentTarget);
     const formDataObject = {} as any;
     formData.forEach((value, key) => {
-      key === "sessionDuration" ? formDataObject[key] = value * 60 : formDataObject[key] = value
+      if(key === "sessionDuration"){
+        formDataObject[key] = value * 60;
+      }else if (key === "bgm" ){
+        formDataObject[key] = playlists.find(playlist => playlist.name === value) || null;
+      }else{
+        formDataObject[key] = value
+      }
     });
+    console.log('formData => ', JSON.stringify(formDataObject))
     //create new session
     createNewSession(formDataObject);
-    //move to new page
+  };
+
+  const loginSpotify = () => {
+    //log into spotify
+    console.log("spotify client id => ", SPOTIFY_CLIENT_ID)
+    window.location.replace(`${SPOTIFY_AUTHORIZE_URL}?client_id=${SPOTIFY_CLIENT_ID}&redirect_uri=${SPOTIFY_REDIRECT_URI}&scope=${SPOTIFY_SCOPES}&response_type=token&show_dialog=true`);
+  }
+
+  const getReturnedParamsFromSpotifyAuth = (hash) => {
+    const stringAfterHashtag = hash.substring(1);
+    const paramsInUrl = stringAfterHashtag.split("&");
+    const paramsSplitUp = paramsInUrl.reduce((accumulator:any, currentValue:any) => {
+      const [key, value] = currentValue.split("=");
+      accumulator[key] = value; 
+      return accumulator;
+    }, {});
+  
+    return paramsSplitUp;
   };
 
   useEffect(() => {
@@ -112,8 +139,30 @@ const Home = () => {
     // };
   }, [seshStatus]);
 
+  useEffect(() => {
+    if (window.location.hash) {
+      const { access_token, expires_in, token_type } = getReturnedParamsFromSpotifyAuth(window.location.hash);
+      
+      const spotifyToken = {
+        accessToken: access_token,
+        tokenType: token_type,
+        expiresIn: expires_in, 
+      }
+
+      localStorage.setItem("spotifyToken", JSON.stringify(spotifyToken));
+  }},[window.location.hash])
+
+  useEffect(() => {
+    const spotifyTokenStr = localStorage.getItem("spotifyToken")
+    if (spotifyTokenStr) {
+      setSpotifyToken(JSON.parse(spotifyTokenStr));
+    }
+    //check if spotify token is valid
+    //if not valid, clear local storage cache
+  }, []);
+
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col min-w-screen min-h-screen items-center justify-center gap-8">
       <div>
         <img src={titleImage} style={{ maxWidth: 400 }} />
       </div>
@@ -138,16 +187,15 @@ const Home = () => {
               required
             />
           </FormControl>
-          <FormControl>
-            <FormLabel>Select music to listen to...</FormLabel>
-            <Autocomplete
-              name="bgm"
-              options={["test"]}
-              placeholder="Select music"
-              sx={{ width: 300 }}
-            />
-          </FormControl>
-
+          {spotifyToken ? 
+            <UserInfo spotifyToken={spotifyToken} playlists={playlists} setPlaylists={setPlaylists}/>
+            : 
+            <div>
+              <p>Add music to your session</p>
+              <Button onClick={loginSpotify}>Login to spotify</Button> 
+            </div>
+          }
+          
           <Button type="submit">Create new session</Button>
         </form>
       </main>
